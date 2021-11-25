@@ -20,19 +20,28 @@ class Identity(nn.Layer):
 class Mlp(nn.Layer):
     def __init__(self, embed_dim, mlp_ratio=4.0, dropout=0.):
         super().__init__()
-        self.fc1 =
-        self.fc2 =
+        self.fc1 = nn.Linear(in_features=embed_dim,out_features=int(mlp_ratio*embed_dim),bias_attr=False)
+        self.fc2 = nn.Linear(in_features=int(mlp_ratio*embed_dim),out_features=embed_dim,bias_attr=False)
         self.act = nn.GELU()
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
-
+        x = self.fc1(x)
+        x = self.fc2(x)
+        x = self.act(x)
+        x = self.dropout(x)
+        return x
 
 
 class PatchEmbedding(nn.Layer):
     def __init__(self, image_size, patch_size, in_channels, embed_dim, dropout=0.):
         super().__init__()
-        self.patch_embedding = nn.Conv2D()
+        # [image_size = h,w; patch_size = h',w'; in_channels=c, embed_dim=c']
+        self.patch_embedding = nn.Conv2D(in_channels=in_channels,
+                                         out_channels=embed_dim,
+                                         kernel_size=patch_size,
+                                         padding=patch_size,
+                                         bias_attr=False)
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
